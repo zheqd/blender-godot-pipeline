@@ -1,0 +1,15 @@
+# Godot 4+ specific ignores
+.godot/
+.import/
+
+# macOS
+.DS_Store
+
+# Backup files
+*~
+*.bak
+
+# Fixture build artifacts regenerated from .blend
+test/fixtures/**/*.gltf.import
+test/fixtures/**/*.bin.import
+test/fixtures/**/*-texco.png.import
