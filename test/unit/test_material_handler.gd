@@ -1,6 +1,6 @@
 extends GutTest
 
-const MaterialHandler = preload("res://addons/gltf_pipeline/handlers/material_handler.gd")
+const MaterialHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/material_handler.gd")
 
 const RED := "res://test/fixtures/test_mat_red.tres"
 const BLUE := "res://test/fixtures/test_mat_blue.tres"
@@ -27,7 +27,7 @@ func _make_mesh() -> MeshInstance3D:
 func test_sets_material_on_surface_0():
 	var mi := _make_mesh()
 	MaterialHandler.apply(mi, {"material_0": RED})
-	var m = mi.get_surface_override_material(0)
+	var m: Material = mi.get_surface_override_material(0)
 	assert_not_null(m)
 	assert_eq(m.resource_path, RED)
 	mi.free()
@@ -73,7 +73,7 @@ func test_shader_key_without_shader_material_is_ignored():
 	var mi := _make_mesh()
 	# RED is a StandardMaterial3D, not a ShaderMaterial — shader key must be ignored
 	MaterialHandler.apply(mi, {"material_0": RED, "shader": SHADER_ONLY})
-	var m = mi.get_surface_override_material(0)
+	var m: Material = mi.get_surface_override_material(0)
 	assert_true(m is StandardMaterial3D)
 	mi.free()
 

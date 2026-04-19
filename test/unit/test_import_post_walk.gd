@@ -3,7 +3,7 @@ extends GutTest
 const PipelineGLTFExtension = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
 
 var ext: PipelineGLTFExtension
-var visited: Array = []
+var visited: Array[String] = []
 
 func before_each():
 	ext = PipelineGLTFExtension.new()
@@ -21,7 +21,7 @@ func test_import_post_visits_every_node_post_order():
 
 	ext._visit_for_test = func(n: Node): visited.append(String(n.name))
 	var state := GLTFState.new()
-	var result = ext._import_post(state, root)
+	var result: int = ext._import_post(state, root)
 	assert_eq(result, OK)
 	assert_eq(visited, ["Grandchild", "Child", "Root"],
 		"post-order: children before parents")

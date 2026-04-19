@@ -1,6 +1,5 @@
 extends GutTest
 
-const PipelineTestHelpers = preload("res://test/integration/helpers.gd")
 
 const FIXTURE := "res://test/fixtures/materials_and_shaders/materials.gltf"
 
@@ -20,7 +19,7 @@ func test_shaded_has_shader_override():
 	if not _fixture_present(): pending("fixture absent"); return
 	var scene := PipelineTestHelpers.import_gltf(FIXTURE)
 	var mi := _find(scene, "Shaded") as MeshInstance3D
-	var m = mi.get_surface_override_material(0)
+	var m: Material = mi.get_surface_override_material(0)
 	assert_true(m is ShaderMaterial)
 	scene.free()
 

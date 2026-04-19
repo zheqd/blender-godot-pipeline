@@ -1,6 +1,5 @@
 extends GutTest
 
-const PipelineTestHelpers = preload("res://test/integration/helpers.gd")
 
 const FIXTURE := "res://test/fixtures/primitives/primitives.gltf"
 
@@ -12,7 +11,7 @@ func test_box_wall_becomes_static_body_with_box_shape():
 		pending("fixture not present — author per README.md")
 		return
 	var scene := PipelineTestHelpers.import_gltf(FIXTURE)
-	var body = _find_body(scene, "StaticBody3D_BoxWall")
+	var body: Node = _find_body(scene,"StaticBody3D_BoxWall")
 	assert_not_null(body)
 	assert_true(body is StaticBody3D)
 	var shape: CollisionShape3D = null
@@ -32,7 +31,7 @@ func test_sphere_prop_becomes_rigid_body():
 		pending("fixture not present — author per README.md")
 		return
 	var scene := PipelineTestHelpers.import_gltf(FIXTURE)
-	var body = _find_body(scene, "RigidBody3D_SphereProp")
+	var body: Node = _find_body(scene,"RigidBody3D_SphereProp")
 	assert_not_null(body)
 	assert_true(body is RigidBody3D)
 	scene.free()
@@ -42,7 +41,7 @@ func test_capsule_npc_becomes_character_body():
 		pending("fixture not present — author per README.md")
 		return
 	var scene := PipelineTestHelpers.import_gltf(FIXTURE)
-	var body = _find_body(scene, "CharacterBody3D_CapsuleNPC")
+	var body: Node = _find_body(scene,"CharacterBody3D_CapsuleNPC")
 	assert_not_null(body)
 	assert_true(body is CharacterBody3D)
 	scene.free()

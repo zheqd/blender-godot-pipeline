@@ -1,10 +1,9 @@
 extends GutTest
 
-const MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
 func _make_importer_mesh() -> ImporterMesh:
 	var im := ImporterMesh.new()
-	var arrays := []
+	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array([
 		Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)

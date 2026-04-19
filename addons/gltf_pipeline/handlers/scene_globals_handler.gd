@@ -3,7 +3,7 @@ class_name SceneGlobalsHandler
 extends RefCounted
 
 static func apply_individual_origins(root: Node) -> void:
-	for child in root.get_children():
+	for child: Node in root.get_children():
 		if child is Node3D:
 			_set_world_zero(child as Node3D)
 
@@ -12,24 +12,26 @@ static func apply_packed_resources(root: Node, save_dir: String, preserve_origin
 	# If caller already ran apply_individual_origins, world positions here are
 	# Vector3.ZERO. preserve_origin=true then re-applies that zero to each
 	# packed instance, keeping the intended "every root at origin" layout.
-	var children := []
-	for c in root.get_children(): children.append(c)
-	for child in children:
-		if not (child is Node3D): continue
-		var c3 := child as Node3D
+	var children: Array[Node] = []
+	for c: Node in root.get_children():
+		children.append(c)
+	for child: Node in children:
+		if not (child is Node3D):
+			continue
+		var c3: Node3D = child as Node3D
 		var preserve: Vector3 = _world_position(c3)
 		_set_ownership_recursive(child, child)
 		var ps := PackedScene.new()
-		var err := ps.pack(child)
+		var err: int = ps.pack(child)
 		if err != OK:
 			push_warning("packed_resources: pack failed for " + str(child.name))
 			continue
-		var scene_path := save_dir + "/" + str(child.name) + ".tscn"
-		var save_err := ResourceSaver.save(ps, scene_path)
+		var scene_path: String = save_dir + "/" + str(child.name) + ".tscn"
+		var save_err: int = ResourceSaver.save(ps, scene_path)
 		if save_err != OK:
 			push_warning("packed_resources: save failed for %s err=%d" % [scene_path, save_err])
 			continue
-		var inst := (load(scene_path) as PackedScene).instantiate()
+		var inst: Node = (load(scene_path) as PackedScene).instantiate()
 		inst.name = "PackedScene_" + str(child.name)
 		root.add_child(inst)
 		if preserve_origin and inst is Node3D:
@@ -58,6 +60,6 @@ static func _set_ownership_recursive(node: Node, owner: Node) -> void:
 	# Post-order: set owner on descendants before their ancestors so that
 	# PackedScene.pack() captures the full subtree (it skips nodes whose
 	# owner is not the pack root).
-	for c in node.get_children():
+	for c: Node in node.get_children():
 		_set_ownership_recursive(c, owner)
 		c.owner = owner

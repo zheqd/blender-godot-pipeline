@@ -1,12 +1,12 @@
 extends GutTest
 
-const MultimeshHandler = preload("res://addons/gltf_pipeline/handlers/multimesh_handler.gd")
-const PipelineGLTFExtension = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
+const MultimeshHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/multimesh_handler.gd")
+const PipelineContext = preload("res://addons/gltf_pipeline/pipeline_context.gd")
 
 var tmp_mesh := "user://tree.tres"
 
 func test_collect_groups_transforms():
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	var tree_a := MeshInstance3D.new()
 	tree_a.name = "TreeA"
 	tree_a.mesh = BoxMesh.new()
@@ -27,7 +27,7 @@ func test_collect_groups_transforms():
 	tree_b.free()
 
 func test_emit_creates_multimesh_instance():
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	ctx.multimesh_groups[tmp_mesh] = [
 		Transform3D().translated(Vector3(1, 0, 0)),
 		Transform3D().translated(Vector3(5, 0, 0))

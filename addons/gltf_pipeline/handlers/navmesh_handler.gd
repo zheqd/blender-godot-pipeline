@@ -2,10 +2,10 @@
 class_name NavMeshHandler
 extends RefCounted
 
-const _ExpressionApplier = preload("res://addons/gltf_pipeline/expression_applier.gd")
-const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
+const _ExpressionApplier: GDScript = preload("res://addons/gltf_pipeline/expression_applier.gd")
+const _MeshUtils: GDScript = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
-static func apply(node: Node, extras: Dictionary, ctx) -> void:
+static func apply(node: Node, extras: Dictionary, ctx: PipelineContext) -> void:
 	if not _MeshUtils.is_mesh_instance(node):
 		return
 	if not extras.has("nav_mesh"):
@@ -30,9 +30,9 @@ static func apply(node: Node, extras: Dictionary, ctx) -> void:
 	region.name = str(node.name) + "_NavMesh"
 
 	if extras.has("prop_file"):
-		var pf = extras["prop_file"]
-		if pf is String and not pf.is_empty():
-			_ExpressionApplier.apply_file(region, pf)
+		var pf: Variant = extras["prop_file"]
+		if pf is String and not (pf as String).is_empty():
+			_ExpressionApplier.apply_file(region, pf as String)
 
 	var parent := node.get_parent()
 	if parent:

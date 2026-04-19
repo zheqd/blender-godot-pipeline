@@ -1,6 +1,6 @@
 extends GutTest
 
-const PipelineTestHelpers = preload("res://test/integration/helpers.gd")
+
 
 const FIXTURE := "res://test/fixtures/scene_globals/globals.gltf"
 
@@ -17,8 +17,8 @@ func test_individual_origins_applied():
 	# individual_origins=1 and packed_resources=1 on the scene-level extras.
 	# After processing, the top-level children should be renamed to
 	# PackedScene_<Name>; no original node names remain.
-	var packed_names: Array = []
-	var original_names: Array = []
+	var packed_names: Array[String] = []
+	var original_names: Array[String] = []
 	for c in scene.get_children():
 		if c is Node3D and c.name.begins_with("PackedScene_"):
 			packed_names.append(str(c.name))

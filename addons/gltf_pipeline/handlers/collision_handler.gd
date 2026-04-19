@@ -21,9 +21,9 @@
 class_name CollisionHandler
 extends RefCounted
 
-const _ExpressionApplier = preload("res://addons/gltf_pipeline/expression_applier.gd")
-const _PhysicsMaterialHandler = preload("res://addons/gltf_pipeline/handlers/physics_material_handler.gd")
-const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
+const _ExpressionApplier: GDScript = preload("res://addons/gltf_pipeline/expression_applier.gd")
+const _PhysicsMaterialHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/physics_material_handler.gd")
+const _MeshUtils: GDScript = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
 ## Returns the physics body node for [param col], or [code]null[/code] in col_only ([code]-c[/code]) mode.
 static func make_body(col: String, base_name: String) -> Node:
@@ -52,7 +52,7 @@ static func make_body(col: String, base_name: String) -> Node:
 ## Builds a [Shape3D] from the shape keyword in [param col] and dimension extras.
 ## Returns [code]null[/code] if required dimension extras are absent.
 static func make_shape(col: String, node: Node, extras: Dictionary) -> Shape3D:
-	var base := col.split("-")[0]
+	var base: String = col.split("-")[0]
 	match base:
 		"box":
 			if not (extras.has("size_x") and extras.has("size_y") and extras.has("size_z")):
@@ -96,19 +96,19 @@ static func make_shape(col: String, node: Node, extras: Dictionary) -> Shape3D:
 			return null
 	return null
 
-static func apply(node: Node, extras: Dictionary, ctx) -> void:
+static func apply(node: Node, extras: Dictionary, ctx: PipelineContext) -> void:
 	if not extras.has("collision"):
 		return
 	var col: String = str(extras["collision"])
-	var simple := "simple" in col
-	var trimesh := "trimesh" in col
-	var bodyonly := "bodyonly" in col
-	var discard_mesh := "-d" in col
-	var col_only := "-c" in col
+	var simple: bool = "simple" in col
+	var trimesh: bool = "trimesh" in col
+	var bodyonly: bool = "bodyonly" in col
+	var discard_mesh: bool = "-d" in col
+	var col_only: bool = "-c" in col
 
-	var body := make_body(col, node.name)
-	var shape := make_shape(col, node, extras)
-	var parent := node.get_parent()
+	var body: Node = make_body(col, node.name)
+	var shape: Shape3D = make_shape(col, node, extras)
+	var parent: Node = node.get_parent()
 
 	# Create CollisionShape3D unless "bodyonly"
 	var cs: CollisionShape3D = null
@@ -149,8 +149,8 @@ static func apply(node: Node, extras: Dictionary, ctx) -> void:
 		if cs:
 			body.add_child(cs)
 		if not discard_mesh and _MeshUtils.is_mesh_instance(node):
-			var nd := node.duplicate() as Node3D
-			for c in nd.get_children():
+			var nd: Node3D = node.duplicate() as Node3D
+			for c: Node in nd.get_children():
 				nd.remove_child(c)
 				c.free()
 			nd.transform = Transform3D()
@@ -159,34 +159,34 @@ static func apply(node: Node, extras: Dictionary, ctx) -> void:
 			body.add_child(nd)
 		parent.add_child(body)
 
-		for child in node.get_children():
+		for child: Node in node.get_children():
 			if child is CollisionShape3D:
 				ctx.deferred_reparents.append([child, body])
 
 		# Apply script/prop_*/physics_mat to BODY
 		if extras.has("script"):
-			var sp = extras["script"]
-			if sp is String and not sp.is_empty():
-				var sc = load(sp)
+			var sp: Variant = extras["script"]
+			if sp is String and not (sp as String).is_empty():
+				var sc: Script = load(sp as String) as Script
 				if sc:
 					body.set_script(sc)
 		if extras.has("prop_file"):
-			var pf = extras["prop_file"]
-			if pf is String and not pf.is_empty():
-				_ExpressionApplier.apply_file(body, pf)
+			var pf: Variant = extras["prop_file"]
+			if pf is String and not (pf as String).is_empty():
+				_ExpressionApplier.apply_file(body, pf as String)
 		if extras.has("prop_string"):
-			var ps = extras["prop_string"]
-			if ps is String and not ps.is_empty():
-				_ExpressionApplier.apply_string(body, ps)
+			var ps: Variant = extras["prop_string"]
+			if ps is String and not (ps as String).is_empty():
+				_ExpressionApplier.apply_string(body, ps as String)
 		if extras.has("physics_mat"):
-			var pm = extras["physics_mat"]
-			if pm is String and not pm.is_empty():
-				_PhysicsMaterialHandler.apply(body, pm)
+			var pm: Variant = extras["physics_mat"]
+			if pm is String and not (pm as String).is_empty():
+				_PhysicsMaterialHandler.apply(body, pm as String)
 
 	ctx.deferred_deletes.append(node)
 
-static func _has_all(d: Dictionary, keys: Array) -> bool:
-	for k in keys:
+static func _has_all(d: Dictionary, keys: Array[String]) -> bool:
+	for k: String in keys:
 		if not d.has(k):
 			return false
 	return true

@@ -7,8 +7,8 @@ static func apply(body: Node, path: String) -> void:
 		return
 	if path.is_empty():
 		return
-	var mat: PhysicsMaterial = load(path)
+	var mat: PhysicsMaterial = load(path) as PhysicsMaterial
 	if mat == null:
 		push_warning("PhysicsMaterialHandler: failed to load " + path)
 		return
-	body.physics_material_override = mat
+	(body as PhysicsBody3D).physics_material_override = mat

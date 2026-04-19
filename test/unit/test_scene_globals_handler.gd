@@ -1,6 +1,6 @@
 extends GutTest
 
-const SceneGlobalsHandler = preload("res://addons/gltf_pipeline/handlers/scene_globals_handler.gd")
+const SceneGlobalsHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/scene_globals_handler.gd")
 
 func test_individual_origins_resets_top_level_positions():
 	var root := Node3D.new()
@@ -49,7 +49,7 @@ func test_packed_resources_packs_each_top_level_child():
 
 	assert_true(ResourceLoader.exists(SAVE_DIR + "/Crate.tscn"))
 	assert_true(ResourceLoader.exists(SAVE_DIR + "/Barrel.tscn"))
-	var names := []
+	var names: Array[StringName] = []
 	for c in root.get_children(): names.append(c.name)
 	assert_has(names, "PackedScene_Crate")
 	assert_has(names, "PackedScene_Barrel")

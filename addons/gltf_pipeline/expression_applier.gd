@@ -12,7 +12,7 @@ extends RefCounted
 
 ## Applies a semicolon-separated list of expressions from [param s] to [param node].
 static func apply_string(node: Node, s: String) -> void:
-	var parts := s.split(";", false)
+	var parts: PackedStringArray = s.split(";", false)
 	var lines: Array[String] = []
 	for p: String in parts:
 		lines.append(p)
@@ -20,7 +20,7 @@ static func apply_string(node: Node, s: String) -> void:
 
 ## Reads expressions line-by-line from [param res_path] and applies each to [param node].
 static func apply_file(node: Node, res_path: String) -> void:
-	var f := FileAccess.open(res_path, FileAccess.READ)
+	var f: FileAccess = FileAccess.open(res_path, FileAccess.READ)
 	if f == null:
 		push_warning("ExpressionApplier: cannot open " + res_path)
 		return
@@ -30,29 +30,29 @@ static func apply_file(node: Node, res_path: String) -> void:
 	apply_lines(node, lines)
 
 static func apply_lines(node: Node, lines: Array[String]) -> void:
-	for raw in lines:
-		var line := String(raw).strip_edges()
+	for raw: String in lines:
+		var line: String = raw.strip_edges()
 		if line.is_empty():
 			continue
 		_apply_line(node, line)
 
 static func _apply_line(node: Node, line: String) -> void:
-	var components := line.split("=", false, 1)
+	var components: PackedStringArray = line.split("=", false, 1)
 	var e := Expression.new()
 	if components.size() > 1:
-		var prop_name := components[0].strip_edges()
-		var expr := components[1].strip_edges()
-		var parse_err := e.parse(expr, ["node"])
+		var prop_name: String = components[0].strip_edges()
+		var expr: String = components[1].strip_edges()
+		var parse_err: int = e.parse(expr, ["node"])
 		if parse_err != OK:
 			push_warning("ExpressionApplier parse error on %s: %s" % [line, e.get_error_text()])
 			return
-		var val = e.execute([node])
+		var val: Variant = e.execute([node])
 		if e.has_execute_failed():
 			push_warning("ExpressionApplier execute error on %s: %s" % [line, e.get_error_text()])
 			return
 		node.set(prop_name, val)
 	else:
-		var parse_err := e.parse(line, ["node"])
+		var parse_err: int = e.parse(line, ["node"])
 		if parse_err != OK:
 			push_warning("ExpressionApplier parse error on bare line %s: %s" % [line, e.get_error_text()])
 			return

@@ -1,6 +1,5 @@
 extends GutTest
 
-const PipelineTestHelpers = preload("res://test/integration/helpers.gd")
 
 const FIXTURE := "res://test/fixtures/scripts_and_props/scripts.gltf"
 const SCRIPT := "res://test/fixtures/scripts_and_props/attached.gd"

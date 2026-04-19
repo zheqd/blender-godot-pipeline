@@ -1,7 +1,7 @@
 extends GutTest
 
-const NavMeshHandler = preload("res://addons/gltf_pipeline/handlers/navmesh_handler.gd")
-const PipelineGLTFExtension = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
+const NavMeshHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/navmesh_handler.gd")
+const PipelineContext = preload("res://addons/gltf_pipeline/pipeline_context.gd")
 
 var tmp_dir := "user://navmesh_test"
 var mesh_save := tmp_dir + "/nav.mesh"
@@ -15,7 +15,7 @@ func after_each():
 		for f in d.get_files(): d.remove(f)
 
 func test_nav_mesh_replaces_node_with_navigation_region():
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	var parent := Node3D.new()
 	var mi := MeshInstance3D.new()
 	mi.name = "Ground"
@@ -38,7 +38,7 @@ func test_prop_file_applied_to_region():
 	f.store_line("enabled=false")
 	f.close()
 
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	var parent := Node3D.new()
 	var mi := MeshInstance3D.new()
 	mi.name = "Ground"

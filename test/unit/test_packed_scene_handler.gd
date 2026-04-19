@@ -1,12 +1,12 @@
 extends GutTest
 
-const PackedSceneHandler = preload("res://addons/gltf_pipeline/handlers/packed_scene_handler.gd")
-const PipelineGLTFExtension = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
+const PackedSceneHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/packed_scene_handler.gd")
+const PipelineContext = preload("res://addons/gltf_pipeline/pipeline_context.gd")
 
 const PACKED := "res://test/fixtures/test_packed.tscn"
 
 func test_instantiates_and_positions_at_node_transform():
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	var parent := Node3D.new()
 	get_tree().root.add_child(parent)
 	var marker := Node3D.new()
@@ -28,7 +28,7 @@ func test_instantiates_and_positions_at_node_transform():
 # global_transform access on detached nodes warns loudly — handler should
 # fall back to local transform without complaining.
 func test_falls_back_to_local_transform_when_not_in_tree():
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	var parent := Node3D.new()   # NOT in SceneTree
 	var marker := Node3D.new()
 	marker.name = "Spawn"

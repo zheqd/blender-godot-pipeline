@@ -1,6 +1,7 @@
 extends GutTest
 
-const PipelineGLTFExtension = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
+const PipelineGLTFExtension: GDScript = preload("res://addons/gltf_pipeline/handlers/../pipeline_extension.gd")
+const PipelineContext = preload("res://addons/gltf_pipeline/pipeline_context.gd")
 
 func test_collision_and_packed_scene_only_collision_fires():
 	var ext := PipelineGLTFExtension.new()
@@ -14,7 +15,7 @@ func test_collision_and_packed_scene_only_collision_fires():
 		"packed_scene": 1,
 	})
 	root.add_child(node)
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	ctx.root = root
 	ext._dispatch(node, ctx)
 	# Collision path queues the node for deletion; packed_scene must NOT have fired.
@@ -39,7 +40,7 @@ func test_multimesh_wins_over_packed_scene():
 		"packed_scene": 1,
 	})
 	root.add_child(node)
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	ctx.root = root
 	ext._dispatch(node, ctx)
 	# multimesh fires: node goes into deferred_deletes, no PackedScene_ child
@@ -62,7 +63,7 @@ func test_single_consumer_no_warning_and_correct_handler():
 	node.mesh = BoxMesh.new()
 	node.set_meta("extras", {"packed_scene": "res://nonexistent_scene.tscn"})
 	root.add_child(node)
-	var ctx := PipelineGLTFExtension.PipelineContext.new()
+	var ctx := PipelineContext.new()
 	ctx.root = root
 	ext._dispatch(node, ctx)
 	# load() on a missing file emits two engine-level errors; declare them expected.

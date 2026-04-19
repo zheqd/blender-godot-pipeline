@@ -3,10 +3,10 @@ class_name StateHandler
 extends RefCounted
 
 static func apply(node: Node, extras: Dictionary) -> void:
-	var state = extras.get("state", "")
+	var state: Variant = extras.get("state", "")
 	match state:
 		"skip":
-			var parent := node.get_parent()
+			var parent: Node = node.get_parent()
 			if parent:
 				parent.remove_child(node)
 				node.queue_free()

@@ -10,9 +10,9 @@
 class_name MultimeshHandler
 extends RefCounted
 
-const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
+const _MeshUtils: GDScript = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
-static func collect(node: Node, extras: Dictionary, ctx) -> void:
+static func collect(node: Node, extras: Dictionary, ctx: PipelineContext) -> void:
 	if not _MeshUtils.is_mesh_instance(node):
 		return
 	if not extras.has("multimesh"):
@@ -31,15 +31,15 @@ static func collect(node: Node, extras: Dictionary, ctx) -> void:
 	ctx.multimesh_groups[path].append(xform)
 	ctx.deferred_deletes.append(node)
 
-static func emit_all(root: Node, ctx) -> void:
-	for path in ctx.multimesh_groups.keys():
+static func emit_all(root: Node, ctx: PipelineContext) -> void:
+	for path: String in ctx.multimesh_groups.keys():
 		var transforms: Array = ctx.multimesh_groups[path]
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
 		mm.mesh = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_REUSE)
 		mm.instance_count = transforms.size()
-		for i in range(transforms.size()):
-			mm.set_instance_transform(i, transforms[i])
+		for i: int in range(transforms.size()):
+			mm.set_instance_transform(i, transforms[i] as Transform3D)
 		var mm_inst := MultiMeshInstance3D.new()
 		mm_inst.multimesh = mm
 		var nm := "Multimesh"

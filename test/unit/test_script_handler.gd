@@ -1,7 +1,6 @@
 extends GutTest
 
-const ScriptHandler = preload("res://addons/gltf_pipeline/handlers/script_handler.gd")
-const MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
+const ScriptHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/script_handler.gd")
 const SCRIPT_PATH := "res://test/fixtures/test_script.gd"
 const PROPS_PATH := "res://test/fixtures/test_props.txt"
 
@@ -53,7 +52,7 @@ func test_set_script_survives_after_materialize():
 	var imi := ImporterMeshInstance3D.new()
 	imi.name = "Target"
 	var im := ImporterMesh.new()
-	var arrays := []
+	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array([
 		Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0)

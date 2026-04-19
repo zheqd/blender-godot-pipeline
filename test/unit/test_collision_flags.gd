@@ -1,9 +1,9 @@
 extends GutTest
 
-const CollisionHandler = preload("res://addons/gltf_pipeline/handlers/collision_handler.gd")
-const PipelineGLTFExtension = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
+const CollisionHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/collision_handler.gd")
+const PipelineContext = preload("res://addons/gltf_pipeline/pipeline_context.gd")
 
-var ctx: PipelineGLTFExtension.PipelineContext
+var ctx: PipelineContext
 
 func _make_mesh_instance() -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
@@ -13,7 +13,7 @@ func _make_mesh_instance() -> MeshInstance3D:
 	return mi
 
 func before_each():
-	ctx = PipelineGLTFExtension.PipelineContext.new()
+	ctx = PipelineContext.new()
 
 func test_normal_collision_wraps_in_body():
 	var parent := Node3D.new()

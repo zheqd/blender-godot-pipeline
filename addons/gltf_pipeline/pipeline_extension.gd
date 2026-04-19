@@ -4,38 +4,24 @@
 ## materialised the glTF node tree. The walk visits every node in post-order so
 ## parents are processed after all their children (safe for deferred deletes).
 ##
-## Coordination across handlers uses [member PipelineContext], which accumulates
+## Coordination across handlers uses [PipelineContext], which accumulates
 ## deferred operations (deletes, reparents) and multimesh groups that are flushed
 ## after the walk completes. This avoids mutating the tree while iterating it.
 @tool
 extends GLTFDocumentExtension
 class_name PipelineGLTFExtension
 
-const _ExtrasReader = preload("res://addons/gltf_pipeline/extras_reader.gd")
-const _StateHandler = preload("res://addons/gltf_pipeline/handlers/state_handler.gd")
-const _NameHandler = preload("res://addons/gltf_pipeline/handlers/name_handler.gd")
-const _ScriptHandler = preload("res://addons/gltf_pipeline/handlers/script_handler.gd")
-const _MaterialHandler = preload("res://addons/gltf_pipeline/handlers/material_handler.gd")
-const _CollisionHandler = preload("res://addons/gltf_pipeline/handlers/collision_handler.gd")
-const _NavMeshHandler = preload("res://addons/gltf_pipeline/handlers/navmesh_handler.gd")
-const _MultimeshHandler = preload("res://addons/gltf_pipeline/handlers/multimesh_handler.gd")
-const _PackedSceneHandler = preload("res://addons/gltf_pipeline/handlers/packed_scene_handler.gd")
-const _SceneGlobalsHandler = preload("res://addons/gltf_pipeline/handlers/scene_globals_handler.gd")
-const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
-
-## Shared state threaded through all handlers during a single import pass.
-##
-## [member deferred_deletes] and [member deferred_reparents] collect tree
-## mutations that cannot happen mid-walk; they are applied by [method _flush]
-## after the post-order traversal finishes.
-class PipelineContext:
-	var state: GLTFState
-	var root: Node
-	var scene_extras: Dictionary = {}
-	var multimesh_groups: Dictionary = {}
-	var deferred_deletes: Array[Node] = []
-	var deferred_reparents: Array = []
-	var gltf_path: String = ""
+const _ExtrasReader: GDScript = preload("res://addons/gltf_pipeline/extras_reader.gd")
+const _StateHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/state_handler.gd")
+const _NameHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/name_handler.gd")
+const _ScriptHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/script_handler.gd")
+const _MaterialHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/material_handler.gd")
+const _CollisionHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/collision_handler.gd")
+const _NavMeshHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/navmesh_handler.gd")
+const _MultimeshHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/multimesh_handler.gd")
+const _PackedSceneHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/packed_scene_handler.gd")
+const _SceneGlobalsHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/scene_globals_handler.gd")
+const _MeshUtils: GDScript = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
 # Test hooks. Set from unit tests to intercept or observe.
 var _visit_for_test: Callable = Callable()
@@ -60,7 +46,7 @@ func _import_post(state: GLTFState, root: Node) -> int:
 	if ctx.scene_extras.get("individual_origins", 0) == 1:
 		_SceneGlobalsHandler.apply_individual_origins(root)
 	if ctx.scene_extras.get("packed_resources", 0) == 1:
-		var save_dir := _derive_packed_dir(state)
+		var save_dir: String = _derive_packed_dir(state)
 		var preserve: bool = ctx.scene_extras.get("individual_origins", 0) == 1
 		_SceneGlobalsHandler.apply_packed_resources(root, save_dir, preserve)
 	_assign_owners(root, root)
@@ -71,7 +57,7 @@ func _import_post(state: GLTFState, root: Node) -> int:
 # into packed-scene instance roots: those subtrees already own each other via
 # the instance root, and re-owning them would break instance semantics.
 func _assign_owners(node: Node, scene_root: Node) -> void:
-	for child in node.get_children():
+	for child: Node in node.get_children():
 		if child.owner == null:
 			child.owner = scene_root
 		# Recurse into every child EXCEPT instanced packed-scene roots.
@@ -83,10 +69,10 @@ func _derive_packed_dir(state: GLTFState) -> String:
 	# (e.g. "globals"); GLTFState.base_path is the directory containing the
 	# imported .gltf (e.g. "res://test/fixtures/scene_globals"). We want the
 	# latter so packed scenes land next to the source file.
-	if state:
+	if state != null:
 		var bp: String = ""
 		if "base_path" in state:
-			bp = state.base_path
+			bp = str(state.get("base_path"))
 		if bp != "":
 			return bp + "/packed_scenes"
 	return "res://packed_scenes"
@@ -94,27 +80,27 @@ func _derive_packed_dir(state: GLTFState) -> String:
 func _extract_scene_extras(state: GLTFState) -> Dictionary:
 	if state == null or state.json == null:
 		return {}
-	var scenes = state.json.get("scenes", [])
-	if scenes is Array and scenes.size() > 0:
-		var s = scenes[0]
+	var scenes: Variant = state.json.get("scenes", [])
+	if scenes is Array and (scenes as Array).size() > 0:
+		var s: Variant = (scenes as Array)[0]
 		if s is Dictionary:
-			var extras = s.get("extras", {})
+			var extras: Variant = (s as Dictionary).get("extras", {})
 			if extras is Dictionary:
-				var props = extras.get("GodotPipelineProps", {})
+				var props: Variant = (extras as Dictionary).get("GodotPipelineProps", {})
 				if props is Dictionary:
-					return props
+					return props as Dictionary
 	return {}
 
 func _walk_post_order(node: Node, ctx: PipelineContext) -> void:
-	var children := node.get_children()
-	for child in children:
+	var children: Array[Node] = node.get_children()
+	for child: Node in children:
 		_walk_post_order(child, ctx)
 	_dispatch(node, ctx)
 
 func _dispatch(node: Node, ctx: PipelineContext) -> void:
 	if _visit_for_test.is_valid():
 		_visit_for_test.call(node)
-	var extras := _ExtrasReader.get_extras(node)
+	var extras: Dictionary = _ExtrasReader.get_extras(node)
 	if extras.is_empty():
 		return
 	_StateHandler.apply(node, extras)
@@ -143,7 +129,7 @@ func _dispatch(node: Node, ctx: PipelineContext) -> void:
 		_MaterialHandler.apply(node, extras)
 
 static func _count_consumers(extras: Dictionary) -> int:
-	var n := 0
+	var n: int = 0
 	if extras.has("collision"): n += 1
 	if extras.has("nav_mesh"): n += 1
 	if extras.has("multimesh"): n += 1
@@ -157,16 +143,17 @@ static func _consumer_keys(extras: Dictionary) -> Array[String]:
 	return out
 
 func _flush(ctx: PipelineContext) -> void:
+	# pair is Array (untyped) — GDScript cannot express Array[Array[Node]] on deferred_reparents.
 	for pair in ctx.deferred_reparents:
 		var child: Node = pair[0]
 		var new_parent: Node = pair[1]
-		var old_parent := child.get_parent()
+		var old_parent: Node = child.get_parent()
 		if old_parent:
 			old_parent.remove_child(child)
 		new_parent.add_child(child)
-	for n in ctx.deferred_deletes:
+	for n: Node in ctx.deferred_deletes:
 		if is_instance_valid(n):
-			var p := n.get_parent()
+			var p: Node = n.get_parent()
 			if p:
 				p.remove_child(n)
 			n.free()
