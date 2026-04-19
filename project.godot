@@ -20,7 +20,6 @@ config/icon="res://icon.svg"
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/gltf_pipeline/plugin.cfg")
 
-[rendering]
+[filesystem]
 
-renderer/rendering_method="forward_plus"
-renderer/rendering_method.mobile="mobile"
+import/blender/enabled=false

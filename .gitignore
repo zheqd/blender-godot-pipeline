@@ -15,6 +15,10 @@
 *.blend2
 *.blend3
 
+# Blend source files — require the paid Blender-Godot Pipeline addon to author;
+# fixtures are reproduced from the README in each test/fixtures/*/ directory.
+*.blend
+
 # Fixture build artifacts regenerated from .blend
 test/fixtures/**/*.gltf.import
 test/fixtures/**/*.bin.import
@@ -29,3 +33,9 @@ test/fixtures/nav_and_multimesh/tree.tres
 # SceneGlobalsHandler writes packed children here when packed_resources=1;
 # regenerated on every import.
 test/fixtures/scene_globals/packed_scenes/
+
+# Internal planning and design docs (archived to Obsidian vault)
+docs/
+
+# Override global gitignore — GitHub metadata must be tracked
+!.github/

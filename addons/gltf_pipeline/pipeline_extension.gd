@@ -1,3 +1,12 @@
+## GLTFDocumentExtension that applies Godot-Pipeline extras to an imported scene.
+##
+## Entry point is [method _import_post], which runs after Godot has fully
+## materialised the glTF node tree. The walk visits every node in post-order so
+## parents are processed after all their children (safe for deferred deletes).
+##
+## Coordination across handlers uses [member PipelineContext], which accumulates
+## deferred operations (deletes, reparents) and multimesh groups that are flushed
+## after the walk completes. This avoids mutating the tree while iterating it.
 @tool
 extends GLTFDocumentExtension
 class_name PipelineGLTFExtension
@@ -14,6 +23,11 @@ const _PackedSceneHandler = preload("res://addons/gltf_pipeline/handlers/packed_
 const _SceneGlobalsHandler = preload("res://addons/gltf_pipeline/handlers/scene_globals_handler.gd")
 const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
+## Shared state threaded through all handlers during a single import pass.
+##
+## [member deferred_deletes] and [member deferred_reparents] collect tree
+## mutations that cannot happen mid-walk; they are applied by [method _flush]
+## after the post-order traversal finishes.
 class PipelineContext:
 	var state: GLTFState
 	var root: Node
@@ -155,4 +169,4 @@ func _flush(ctx: PipelineContext) -> void:
 			var p := n.get_parent()
 			if p:
 				p.remove_child(n)
-			n.queue_free()
+			n.free()

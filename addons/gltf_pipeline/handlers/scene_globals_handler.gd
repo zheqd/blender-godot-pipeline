@@ -35,7 +35,7 @@ static func apply_packed_resources(root: Node, save_dir: String, preserve_origin
 		if preserve_origin and inst is Node3D:
 			_set_world_position(inst as Node3D, preserve)
 		root.remove_child(child)
-		child.queue_free()
+		child.free()
 
 # Read world position if the node is in a SceneTree; otherwise return the
 # local position (valid fallback when root is at identity, which it is for

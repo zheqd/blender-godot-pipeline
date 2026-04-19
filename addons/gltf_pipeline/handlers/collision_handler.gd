@@ -1,3 +1,22 @@
+## Creates physics bodies and collision shapes from the [code]collision[/code] extra.
+##
+## The [code]collision[/code] value is a terse string encoding both the body type
+## and shape type, e.g. [code]"box-r"[/code] (BoxShape3D inside RigidBody3D) or
+## [code]"trimesh"[/code] (trimesh StaticBody3D). Flags after the hyphen select
+## the body type:
+## [codeblock]
+## -r  RigidBody3D        -a  Area3D
+## -m  AnimatableBody3D   -h  CharacterBody3D
+## -c  no body (shape parented directly to scene, col_only mode)
+## -d  discard mesh node after building body
+## [/codeblock]
+## Shape keywords before the hyphen: [code]box[/code], [code]sphere[/code],
+## [code]capsule[/code], [code]cylinder[/code], [code]trimesh[/code],
+## [code]simple[/code] (convex hull). Default (no keyword) is StaticBody3D with
+## a trimesh shape.
+##
+## Because this handler deletes the original node and inserts a new subtree,
+## it is a "consumer" handler — only one consumer may run per node.
 @tool
 class_name CollisionHandler
 extends RefCounted
@@ -6,6 +25,7 @@ const _ExpressionApplier = preload("res://addons/gltf_pipeline/expression_applie
 const _PhysicsMaterialHandler = preload("res://addons/gltf_pipeline/handlers/physics_material_handler.gd")
 const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
+## Returns the physics body node for [param col], or [code]null[/code] in col_only ([code]-c[/code]) mode.
 static func make_body(col: String, base_name: String) -> Node:
 	if col.find("-c") != -1:
 		return null
@@ -29,6 +49,8 @@ static func make_body(col: String, base_name: String) -> Node:
 	s.name = "StaticBody3D_" + base_name
 	return s
 
+## Builds a [Shape3D] from the shape keyword in [param col] and dimension extras.
+## Returns [code]null[/code] if required dimension extras are absent.
 static func make_shape(col: String, node: Node, extras: Dictionary) -> Shape3D:
 	var base := col.split("-")[0]
 	match base:
@@ -130,7 +152,7 @@ static func apply(node: Node, extras: Dictionary, ctx) -> void:
 			var nd := node.duplicate() as Node3D
 			for c in nd.get_children():
 				nd.remove_child(c)
-				c.queue_free()
+				c.free()
 			nd.transform = Transform3D()
 			nd.scale = (node as Node3D).scale
 			nd.rotation = (node as Node3D).rotation

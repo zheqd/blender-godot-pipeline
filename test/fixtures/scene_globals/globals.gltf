@@ -12,7 +12,7 @@
 					"export_UI":1,
 					"individual_origins":1,
 					"packed_resources":1,
-					"save_path":"/Users/zheqd/Projects/gamedev/blender-gltf-godot-pipeline/test/fixtures/scene_globals/globals.gltf",
+					"save_path":"/project/test/fixtures/scene_globals/globals.gltf",
 					"counter":1
 				}
 			},

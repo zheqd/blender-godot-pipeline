@@ -14,7 +14,7 @@
 					"object_name":"",
 					"col_types":3,
 					"export_UI":1,
-					"save_path":"/Users/zheqd/Projects/gamedev/blender-gltf-godot-pipeline/test/fixtures/primitives/primitives.gltf",
+					"save_path":"/project/test/fixtures/primitives/primitives.gltf",
 					"counter":5,
 					"discard_mesh":0,
 					"body_types":4,

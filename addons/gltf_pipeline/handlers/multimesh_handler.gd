@@ -1,3 +1,11 @@
+## Aggregates repeated mesh nodes into a single [MultiMeshInstance3D].
+##
+## Processing is split into two phases to handle nodes spread across the tree:
+## [br]1. [method collect] — called per-node during the post-order walk; records
+##    the node's transform and saves the mesh to [param path], then defers deletion
+##    of the original node.
+## [br]2. [method emit_all] — called once after the walk; builds a [MultiMesh]
+##    from each group's collected transforms and attaches it to the scene root.
 @tool
 class_name MultimeshHandler
 extends RefCounted

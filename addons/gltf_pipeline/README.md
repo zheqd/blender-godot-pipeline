@@ -44,7 +44,7 @@ Use the Blender addon's panel to set extras on objects. Export via **glTF 2.0 â†
 
 ## Divergences from v2.5.5 runtime
 
-See `DIVERGENCES.md` at the project root. The short list:
+Key divergences from the v2.5.5 reference runtime:
 
 - `state=skip` uses `queue_free()` via `remove_child()` instead of `node.free()` (safe under the `_import_post` walk).
 - `multimesh=<path>` paths must use `.tres`/`.res` â€” Godot's `ResourceSaver` rejects the `.mesh` extension v2.5.5 allowed.

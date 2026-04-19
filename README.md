@@ -2,6 +2,8 @@
 
 A Godot 4.6.2 addon that implements the v2.5.5 Blender-Godot Pipeline runtime using `GLTFDocumentExtension`.
 
+This addon ports the Godot-side runtime of the [Blender-Godot Pipeline](https://github.com/bikemurt/blender-godot-pipeline) (v2.5.5, `SceneInit.gd`) into Godot's native `GLTFDocumentExtension` API. The Blender-side addon required for authoring extras is a separate paid product: [Blender-Godot Pipeline on SuperHive Market](https://superhivemarket.com/products/blender-godot-pipeline-addon).
+
 ## Compatibility
 
 - **Blender addon:** Works with `godot_pipeline_v255_blender42+.py` (v2.5.5). Schema unchanged.
@@ -55,13 +57,19 @@ Unit tests run without external assets. Integration tests require `.gltf` fixtur
 
 ## Differences from v2.5.5
 
-See `DIVERGENCES.md` for the full list. Summary:
+This addon achieves 1:1 behavioral parity with the v2.5.5 runtime, but the implementation differs in several ways:
 
-- `state=skip` uses `queue_free()` via `remove_child()` instead of `node.free()`.
-- Multimesh save paths must be `.tres`/`.res` (Godot's `ResourceSaver` rejects `.mesh`).
-- No `_Imported` hot-reload marker — `_import_post` runs natively on every re-import.
-- Uses Godot's automatic extras → meta propagation (4.4+) instead of re-parsing glTF JSON.
-- Implemented as `GLTFDocumentExtension`, not `EditorScenePostImport`.
+**Architecture**
+- Implemented as `GLTFDocumentExtension._import_post()` instead of `EditorScenePostImport._post_import()`, integrating natively with Godot's import pipeline.
+- Extras are read from engine-propagated `node.meta["extras"]` and `mesh.meta["extras"]` (Godot 4.4+) rather than re-parsing the raw glTF JSON.
+- No `_Imported` hot-reload marker node — `_import_post` runs natively on every re-import.
+
+**Behavioral corrections**
+- `is_inside_tree()` guard added for world-transform reads — the import hook runs outside the SceneTree.
+- `col_only` (`-c`) with conflicting body-type extras now discards the extras instead of constructing an orphaned body.
+- `shader` override duplicates the material before modifying it — the original leaks changes to shared materials.
+- Multimesh save paths must use `.tres`/`.res` — Godot's `ResourceSaver` rejects `.mesh`.
+- `ImporterMeshInstance3D` nodes are pre-materialized to `MeshInstance3D` early so script and material changes survive the engine's own conversion step.
 
 ## License
 
