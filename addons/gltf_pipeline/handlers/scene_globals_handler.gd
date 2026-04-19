@@ -9,6 +9,9 @@ static func apply_individual_origins(root: Node) -> void:
 
 static func apply_packed_resources(root: Node, save_dir: String, preserve_origin: bool) -> void:
 	DirAccess.make_dir_recursive_absolute(save_dir)
+	# If caller already ran apply_individual_origins, world positions here are
+	# Vector3.ZERO. preserve_origin=true then re-applies that zero to each
+	# packed instance, keeping the intended "every root at origin" layout.
 	var children := []
 	for c in root.get_children(): children.append(c)
 	for child in children:
@@ -52,6 +55,9 @@ static func _set_world_zero(n: Node3D) -> void:
 	_set_world_position(n, Vector3.ZERO)
 
 static func _set_ownership_recursive(node: Node, owner: Node) -> void:
+	# Post-order: set owner on descendants before their ancestors so that
+	# PackedScene.pack() captures the full subtree (it skips nodes whose
+	# owner is not the pack root).
 	for c in node.get_children():
 		_set_ownership_recursive(c, owner)
 		c.owner = owner

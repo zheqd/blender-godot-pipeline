@@ -28,10 +28,10 @@ static func emit_all(root: Node, ctx) -> void:
 		var transforms: Array = ctx.multimesh_groups[path]
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_REUSE)
 		mm.instance_count = transforms.size()
 		for i in range(transforms.size()):
 			mm.set_instance_transform(i, transforms[i])
-		mm.mesh = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		var mm_inst := MultiMeshInstance3D.new()
 		mm_inst.multimesh = mm
 		var nm := "Multimesh"

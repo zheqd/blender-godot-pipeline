@@ -3,22 +3,23 @@ class_name ExpressionApplier
 extends RefCounted
 
 static func apply_string(node: Node, s: String) -> void:
-	var lines := s.split(";", false)
-	apply_lines(node, Array(lines))
+	var parts := s.split(";", false)
+	var lines: Array[String] = []
+	for p: String in parts:
+		lines.append(p)
+	apply_lines(node, lines)
 
 static func apply_file(node: Node, res_path: String) -> void:
 	var f := FileAccess.open(res_path, FileAccess.READ)
 	if f == null:
 		push_warning("ExpressionApplier: cannot open " + res_path)
 		return
-	var lines: Array = []
+	var lines: Array[String] = []
 	while not f.eof_reached():
-		var line := f.get_line()
-		if line != "":
-			lines.append(line)
+		lines.append(f.get_line())
 	apply_lines(node, lines)
 
-static func apply_lines(node: Node, lines: Array) -> void:
+static func apply_lines(node: Node, lines: Array[String]) -> void:
 	for raw in lines:
 		var line := String(raw).strip_edges()
 		if line.is_empty():

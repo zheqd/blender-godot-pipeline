@@ -53,13 +53,15 @@ func _import_post(state: GLTFState, root: Node) -> int:
 	return OK
 
 # Set owner=scene_root on every descendant that doesn't already have one, so
-# Godot persists them when the imported scene is baked to .scn. Nodes inside
-# a packed-scene instance already own each other via the instance root — leave
-# those subtrees alone or we'd break instance semantics.
+# Godot persists them when the imported scene is baked to .scn. Skip recursion
+# into packed-scene instance roots: those subtrees already own each other via
+# the instance root, and re-owning them would break instance semantics.
 func _assign_owners(node: Node, scene_root: Node) -> void:
 	for child in node.get_children():
 		if child.owner == null:
 			child.owner = scene_root
+		# Recurse into every child EXCEPT instanced packed-scene roots.
+		if child.scene_file_path == "":
 			_assign_owners(child, scene_root)
 
 func _derive_packed_dir(state: GLTFState) -> String:
@@ -107,15 +109,38 @@ func _dispatch(node: Node, ctx: PipelineContext) -> void:
 	_NameHandler.apply(node, extras)
 	if not extras.has("collision") and not extras.has("nav_mesh"):
 		_ScriptHandler.apply(node, extras)
-	_MaterialHandler.apply(node, extras)
+	# Consumer handlers are mutually exclusive: each deletes `node` and spawns
+	# replacements, so running more than one produces undefined state.
+	# Priority (deterministic): collision > nav_mesh > multimesh > packed_scene.
+	if _count_consumers(extras) > 1:
+		push_warning("Pipeline: node '%s' specifies multiple consumer extras [%s]; only the highest-priority one will run." % [node.name, ", ".join(_consumer_keys(extras))])
 	if extras.has("collision"):
+		# Material applies to the body's duplicated mesh node, so still run it.
+		_MaterialHandler.apply(node, extras)
 		_CollisionHandler.apply(node, extras, ctx)
-	if extras.has("nav_mesh"):
+	elif extras.has("nav_mesh"):
 		_NavMeshHandler.apply(node, extras, ctx)
-	if extras.has("multimesh"):
+	elif extras.has("multimesh"):
 		_MultimeshHandler.collect(node, extras, ctx)
-	if extras.has("packed_scene"):
+	elif extras.has("packed_scene"):
 		_PackedSceneHandler.apply(node, extras, ctx)
+	else:
+		# No consumer handler — apply material to the node itself.
+		_MaterialHandler.apply(node, extras)
+
+static func _count_consumers(extras: Dictionary) -> int:
+	var n := 0
+	if extras.has("collision"): n += 1
+	if extras.has("nav_mesh"): n += 1
+	if extras.has("multimesh"): n += 1
+	if extras.has("packed_scene"): n += 1
+	return n
+
+static func _consumer_keys(extras: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	for k: String in ["collision", "nav_mesh", "multimesh", "packed_scene"]:
+		if extras.has(k): out.append(k)
+	return out
 
 func _flush(ctx: PipelineContext) -> void:
 	for pair in ctx.deferred_reparents:

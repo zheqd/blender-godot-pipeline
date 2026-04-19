@@ -76,3 +76,30 @@ func test_shader_key_without_shader_material_is_ignored():
 	var m = mi.get_surface_override_material(0)
 	assert_true(m is StandardMaterial3D)
 	mi.free()
+
+func test_shader_override_does_not_leak_to_shared_material():
+	var mat_path := "user://shared_mat_leak_test.tres"
+	var shader_a_path := "user://shader_a_leak_test.gdshader"
+	var mat := ShaderMaterial.new()
+	ResourceSaver.save(mat, mat_path)
+	var sa := Shader.new()
+	sa.code = "shader_type spatial;\nvoid fragment() {}"
+	ResourceSaver.save(sa, shader_a_path)
+
+	# Node 1: apply material WITH shader override
+	var node1 := MeshInstance3D.new()
+	node1.mesh = BoxMesh.new()
+	MaterialHandler.apply(node1, {"material_0": mat_path, "shader": shader_a_path})
+
+	# Node 2: apply SAME material WITHOUT shader override
+	var node2 := MeshInstance3D.new()
+	node2.mesh = BoxMesh.new()
+	MaterialHandler.apply(node2, {"material_0": mat_path})
+
+	# The cached resource must be unchanged (shader still null)
+	var shared_now := ResourceLoader.load(mat_path, "", ResourceLoader.CACHE_MODE_IGNORE) as ShaderMaterial
+	assert_not_null(shared_now, "shared material must have loaded from user://")
+	assert_null(shared_now.shader, "shared cached material must not have been mutated by shader override")
+
+	node1.free()
+	node2.free()

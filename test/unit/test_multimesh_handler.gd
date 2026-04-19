@@ -32,7 +32,6 @@ func test_emit_creates_multimesh_instance():
 		Transform3D().translated(Vector3(1, 0, 0)),
 		Transform3D().translated(Vector3(5, 0, 0))
 	]
-	# Pretend we already saved the mesh
 	ResourceSaver.save(BoxMesh.new(), tmp_mesh)
 
 	var root := Node3D.new()
@@ -40,8 +39,12 @@ func test_emit_creates_multimesh_instance():
 
 	var mm_inst: MultiMeshInstance3D = null
 	for c in root.get_children():
-		if c is MultiMeshInstance3D: mm_inst = c
+		if c is MultiMeshInstance3D:
+			mm_inst = c
 	assert_not_null(mm_inst)
 	assert_eq(mm_inst.multimesh.instance_count, 2)
 	assert_eq(mm_inst.multimesh.transform_format, MultiMesh.TRANSFORM_3D)
+	# Note: get_instance_transform reads from a GPU buffer that is unavailable in
+	# headless mode — MultiMesh.get_buffer() returns empty in that context.
+	# Transform correctness is exercised by the integration test instead.
 	root.free()

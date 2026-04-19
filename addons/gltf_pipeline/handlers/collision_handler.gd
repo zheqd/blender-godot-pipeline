@@ -112,6 +112,9 @@ static func apply(node: Node, extras: Dictionary, ctx) -> void:
 			cs.position += Vector3(cx, cy, cz)
 
 	if col_only:
+		for k: String in ["script", "prop_file", "prop_string", "physics_mat"]:
+			if extras.has(k):
+				push_warning("CollisionHandler: '%s' on node '%s' is ignored because collision mode includes '-c' (no body is created). Remove '-c' or drop '%s'." % [k, node.name, k])
 		if cs:
 			parent.add_child(cs)
 			if node is Node3D:

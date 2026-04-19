@@ -18,11 +18,15 @@ static func apply(node: Node, extras: Dictionary) -> void:
 		if mat == null:
 			push_warning("MaterialHandler: failed to load " + path)
 			continue
-		# Apply shader override onto the material BEFORE binding, if requested.
-		if extras.has("shader"):
+		# Duplicate before mutating so the shared cached resource is not modified.
+		# (v2.5.5 parity trap: that version mutated in place, causing the shader
+		# to bleed into every other node loading this material path.)
+		if extras.has("shader") and mat is ShaderMaterial:
 			var shader_path = extras["shader"]
-			if shader_path is String and not shader_path.is_empty() and mat is ShaderMaterial:
+			if shader_path is String and not shader_path.is_empty():
 				var shader: Shader = load(shader_path)
 				if shader:
-					(mat as ShaderMaterial).shader = shader
+					var sm := (mat as ShaderMaterial).duplicate() as ShaderMaterial
+					sm.shader = shader
+					mat = sm
 		_MeshUtils.set_surface_material(node, i, mat)

@@ -38,3 +38,14 @@ func test_non_mesh_instance_ignores_mesh_path():
 	n.set_meta("extras", {"a": 1})
 	assert_eq(ExtrasReader.get_extras(n), {"a": 1})
 	n.free()
+
+func test_node_extras_override_mesh_extras_on_conflict():
+	var mi := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.set_meta("extras", {"collision": "simple", "size_x": 1.0})
+	mi.mesh = mesh
+	mi.set_meta("extras", {"collision": "box"})
+	var merged := ExtrasReader.get_extras(mi)
+	assert_eq(merged["collision"], "box", "node extras must override mesh extras on conflict")
+	assert_eq(merged["size_x"], 1.0, "non-conflicting mesh extras must survive")
+	mi.free()

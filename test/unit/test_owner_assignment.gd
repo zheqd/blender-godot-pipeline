@@ -70,3 +70,37 @@ func test_already_owned_node_untouched():
 	assert_eq(a.owner, root, "a kept")
 	assert_eq(b.owner, a, "b owner NOT rewritten to root")
 	root.free()
+
+func test_assign_owners_recurses_through_owned_non_instance_nodes():
+	# Construct: root
+	#              └── middle (owner=root, NOT a scene instance)
+	#                    └── inner (owner=null)
+	# _assign_owners must set inner.owner = root.
+	var root := Node3D.new()
+	var middle := Node3D.new()
+	middle.name = "middle"
+	var inner := Node3D.new()
+	inner.name = "inner"
+	root.add_child(middle)
+	middle.owner = root
+	middle.add_child(inner)
+	ext._assign_owners(root, root)
+	assert_eq(inner.owner, root, "inner should have been assigned root as owner")
+	root.free()
+
+func test_assign_owners_skips_packed_scene_instance_subtree():
+	# When a child has scene_file_path != "", its subtree is already
+	# owned via the instance root and must NOT be re-owned.
+	var root := Node3D.new()
+	var inst := Node3D.new()
+	inst.name = "inst"
+	inst.scene_file_path = "res://some_packed.tscn"
+	var inside := Node3D.new()
+	inside.name = "inside"
+	root.add_child(inst)
+	inst.owner = root
+	inst.add_child(inside)
+	inside.owner = inst
+	ext._assign_owners(root, root)
+	assert_eq(inside.owner, inst, "inside owner must remain the instance root")
+	root.free()

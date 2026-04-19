@@ -151,3 +151,33 @@ func test_existing_collision_shape_child_is_deferred_reparent():
 	assert_eq(ctx.deferred_reparents.size(), 1, "one reparent queued")
 	assert_eq(ctx.deferred_reparents[0][0], preexisting)
 	parent.free()
+
+func test_col_only_with_script_queues_warning():
+	# When '-c' (col_only) is combined with 'script', the warning must fire
+	# because no body is created to attach the script to.
+	# We verify the handler still completes without error and only
+	# attaches the CollisionShape3D (not a body).
+	var parent := Node3D.new()
+	var node := MeshInstance3D.new()
+	node.name = "ColOnly"
+	node.mesh = BoxMesh.new()
+	parent.add_child(node)
+	var extras := {
+		"collision": "box-c",
+		"size_x": 1.0, "size_y": 1.0, "size_z": 1.0,
+		"script": "res://nonexistent_script.gd",
+	}
+	# The handler will push_warning about "script" being ignored.
+	# GUT's assert_has_signal cannot intercept push_warning, so we
+	# verify behavioral correctness: no body in parent, shape is present.
+	CollisionHandler.apply(node, extras, ctx)
+	var has_body := false
+	var shape_count := 0
+	for c in parent.get_children():
+		if c is StaticBody3D or c is RigidBody3D or c is Area3D:
+			has_body = true
+		if c is CollisionShape3D:
+			shape_count += 1
+	assert_false(has_body, "col_only must not add a body to parent")
+	assert_eq(shape_count, 1, "col_only must add exactly one CollisionShape3D to parent")
+	parent.free()
