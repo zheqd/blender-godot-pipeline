@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[node name="PackedRoot" type="Node3D"]
+
+[node name="Inner" type="Label3D" parent="."]
+text = "Hello"
