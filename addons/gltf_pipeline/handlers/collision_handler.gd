@@ -4,6 +4,7 @@ extends RefCounted
 
 const _ExpressionApplier = preload("res://addons/gltf_pipeline/expression_applier.gd")
 const _PhysicsMaterialHandler = preload("res://addons/gltf_pipeline/handlers/physics_material_handler.gd")
+const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
 static func make_body(col: String, base_name: String) -> Node:
 	if col.find("-c") != -1:
@@ -62,12 +63,14 @@ static func make_shape(col: String, node: Node, extras: Dictionary) -> Shape3D:
 			s_cylinder.radius = float(extras["radius"])
 			return s_cylinder
 		"trimesh":
-			if node is MeshInstance3D and (node as MeshInstance3D).mesh:
-				return (node as MeshInstance3D).mesh.create_trimesh_shape()
+			var tm: Mesh = _MeshUtils.get_mesh(node)
+			if tm:
+				return tm.create_trimesh_shape()
 			return null
 		"simple":
-			if node is MeshInstance3D and (node as MeshInstance3D).mesh:
-				return (node as MeshInstance3D).mesh.create_convex_shape()
+			var sm: Mesh = _MeshUtils.get_mesh(node)
+			if sm:
+				return sm.create_convex_shape()
 			return null
 	return null
 
@@ -120,7 +123,7 @@ static func apply(node: Node, extras: Dictionary, ctx) -> void:
 			body.position = (node as Node3D).position
 		if cs:
 			body.add_child(cs)
-		if not discard_mesh and node is MeshInstance3D:
+		if not discard_mesh and _MeshUtils.is_mesh_instance(node):
 			var nd := node.duplicate() as Node3D
 			for c in nd.get_children():
 				nd.remove_child(c)

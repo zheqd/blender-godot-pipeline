@@ -2,23 +2,26 @@
 class_name MultimeshHandler
 extends RefCounted
 
+const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
+
 static func collect(node: Node, extras: Dictionary, ctx) -> void:
-	if not (node is MeshInstance3D):
+	if not _MeshUtils.is_mesh_instance(node):
 		return
 	if not extras.has("multimesh"):
 		return
 	var path: String = extras["multimesh"]
 	if path.is_empty():
 		return
-	var mi := node as MeshInstance3D
+	var mesh: Mesh = _MeshUtils.get_mesh(node)
 	if not ctx.multimesh_groups.has(path):
 		ctx.multimesh_groups[path] = []
-		if mi.mesh:
-			mi.mesh.resource_name = mi.name
-			ResourceSaver.save(mi.mesh, path)
-			mi.mesh.take_over_path(path)
-	ctx.multimesh_groups[path].append(mi.transform)
-	ctx.deferred_deletes.append(mi)
+		if mesh:
+			mesh.resource_name = str(node.name)
+			ResourceSaver.save(mesh, path)
+			mesh.take_over_path(path)
+	var xform: Transform3D = (node as Node3D).transform if node is Node3D else Transform3D()
+	ctx.multimesh_groups[path].append(xform)
+	ctx.deferred_deletes.append(node)
 
 static func emit_all(root: Node, ctx) -> void:
 	for path in ctx.multimesh_groups.keys():

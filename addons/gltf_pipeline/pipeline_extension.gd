@@ -12,6 +12,7 @@ const _NavMeshHandler = preload("res://addons/gltf_pipeline/handlers/navmesh_han
 const _MultimeshHandler = preload("res://addons/gltf_pipeline/handlers/multimesh_handler.gd")
 const _PackedSceneHandler = preload("res://addons/gltf_pipeline/handlers/packed_scene_handler.gd")
 const _SceneGlobalsHandler = preload("res://addons/gltf_pipeline/handlers/scene_globals_handler.gd")
+const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
 class PipelineContext:
 	var state: GLTFState
@@ -29,6 +30,11 @@ var _last_ctx: PipelineContext = null
 func _import_post(state: GLTFState, root: Node) -> int:
 	if root == null:
 		return OK
+	# Pre-convert ImporterMeshInstance3D → MeshInstance3D so subsequent
+	# handler changes (set_script, set_surface_override_material, etc.)
+	# survive the engine's own conversion pass that runs at the end of
+	# generate_scene().
+	_MeshUtils.materialize_all(root)
 	var ctx := PipelineContext.new()
 	ctx.state = state
 	ctx.root = root
@@ -43,17 +49,31 @@ func _import_post(state: GLTFState, root: Node) -> int:
 		var save_dir := _derive_packed_dir(state)
 		var preserve: bool = ctx.scene_extras.get("individual_origins", 0) == 1
 		_SceneGlobalsHandler.apply_packed_resources(root, save_dir, preserve)
+	_assign_owners(root, root)
 	return OK
 
+# Set owner=scene_root on every descendant that doesn't already have one, so
+# Godot persists them when the imported scene is baked to .scn. Nodes inside
+# a packed-scene instance already own each other via the instance root — leave
+# those subtrees alone or we'd break instance semantics.
+func _assign_owners(node: Node, scene_root: Node) -> void:
+	for child in node.get_children():
+		if child.owner == null:
+			child.owner = scene_root
+			_assign_owners(child, scene_root)
+
 func _derive_packed_dir(state: GLTFState) -> String:
-	var base := "res://packed_scenes"
+	# GLTFState.filename in Godot 4.6.2 is the basename without extension
+	# (e.g. "globals"); GLTFState.base_path is the directory containing the
+	# imported .gltf (e.g. "res://test/fixtures/scene_globals"). We want the
+	# latter so packed scenes land next to the source file.
 	if state:
-		var fn: String = ""
-		if "filename" in state:
-			fn = state.filename
-		if fn != "":
-			base = fn.get_base_dir() + "/packed_scenes"
-	return base
+		var bp: String = ""
+		if "base_path" in state:
+			bp = state.base_path
+		if bp != "":
+			return bp + "/packed_scenes"
+	return "res://packed_scenes"
 
 func _extract_scene_extras(state: GLTFState) -> Dictionary:
 	if state == null or state.json == null:

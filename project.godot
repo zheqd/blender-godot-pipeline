@@ -1,6 +1,10 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
 ; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -9,7 +13,6 @@ config_version=5
 config/name="Blender-glTF-Godot Pipeline"
 config/description="1:1 port of the v2.5.5 Blender-Godot Pipeline runtime to GLTFDocumentExtension."
 config/version="1.0.0"
-run/main_scene=""
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 

@@ -2,10 +2,11 @@
 class_name MaterialHandler
 extends RefCounted
 
+const _MeshUtils = preload("res://addons/gltf_pipeline/mesh_utils.gd")
+
 static func apply(node: Node, extras: Dictionary) -> void:
-	if not (node is MeshInstance3D):
+	if not _MeshUtils.is_mesh_instance(node):
 		return
-	var mi := node as MeshInstance3D
 	for i in range(4):
 		var key := "material_%d" % i
 		if not extras.has(key):
@@ -24,4 +25,4 @@ static func apply(node: Node, extras: Dictionary) -> void:
 				var shader: Shader = load(shader_path)
 				if shader:
 					(mat as ShaderMaterial).shader = shader
-		mi.set_surface_override_material(i, mat)
+		_MeshUtils.set_surface_material(node, i, mat)

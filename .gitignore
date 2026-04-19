@@ -2,14 +2,30 @@
 .godot/
 .import/
 
+# Project icon import sidecar — regenerated on first open
+/icon.svg.import
+
 # macOS
 .DS_Store
 
 # Backup files
 *~
 *.bak
+*.blend1
+*.blend2
+*.blend3
 
 # Fixture build artifacts regenerated from .blend
 test/fixtures/**/*.gltf.import
 test/fixtures/**/*.bin.import
 test/fixtures/**/*-texco.png.import
+
+# Plugin-generated resources (written by NavMeshHandler / MultimeshHandler
+# on every import). These are authored in the .blend as path references,
+# and re-materialized on disk each time the .gltf is imported.
+test/fixtures/nav_and_multimesh/nav.tres
+test/fixtures/nav_and_multimesh/tree.tres
+
+# SceneGlobalsHandler writes packed children here when packed_resources=1;
+# regenerated on every import.
+test/fixtures/scene_globals/packed_scenes/
