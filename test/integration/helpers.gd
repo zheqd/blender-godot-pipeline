@@ -2,14 +2,14 @@
 class_name PipelineTestHelpers
 extends RefCounted
 
-const _PipelineGLTFExtension: PipelineGLTFExtension = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
+const _PipelineGLTFExtension: GDScript = preload("res://addons/gltf_pipeline/pipeline_extension.gd")
 
 # Imports a .gltf with the pipeline extension registered.
 # In headless test mode the EditorPlugin doesn't load, so we register the
 # extension ourselves for the duration of the call. In-editor importing
 # uses the plugin's own registration and this helper is not involved.
 static func import_gltf(path: String) -> Node:
-	var ext := _PipelineGLTFExtension.new()
+	var ext: GLTFDocumentExtension = _PipelineGLTFExtension.new() as GLTFDocumentExtension
 	GLTFDocument.register_gltf_document_extension(ext, true)
 	var result: Node = null
 	var gltf := GLTFDocument.new()
