@@ -136,7 +136,7 @@ static func apply(node: Node, extras: Dictionary, ctx: PipelineContext) -> void:
 	if col_only:
 		for k: String in ["script", "prop_file", "prop_string", "physics_mat"]:
 			if extras.has(k):
-				push_warning("CollisionHandler: '%s' on node '%s' is ignored because collision mode includes '-c' (no body is created). Remove '-c' or drop '%s'." % [k, node.name, k])
+				push_warning("CollisionHandler: '%s' on node '%s' has no effect in col_only ('-c') mode - there is no body to attach it to. If this node provides orphan colliders to a parent scene's body, move '%s' to that parent. Otherwise drop '-c'." % [k, node.name, k])
 		if cs:
 			parent.add_child(cs)
 			if node is Node3D:

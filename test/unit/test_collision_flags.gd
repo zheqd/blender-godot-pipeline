@@ -152,6 +152,63 @@ func test_existing_collision_shape_child_is_deferred_reparent():
 	assert_eq(ctx.deferred_reparents[0][0], preexisting)
 	parent.free()
 
+func test_col_only_clean_no_warnings():
+	# Orphan-collider workflow: a .gltf that only contributes CollisionShape3D
+	# nodes, intended to nest inside another scene whose body owns them.
+	# With no body-targeting extras, the handler must produce a clean
+	# orphan shape and emit no warnings.
+	var parent := Node3D.new()
+	var mi := _make_mesh_instance()
+	parent.add_child(mi)
+	CollisionHandler.apply(mi, {
+		"collision": "box-c",
+		"size_x": "1", "size_y": "1", "size_z": "1"
+	}, ctx)
+	var body_count := 0
+	var shape_count := 0
+	for c in parent.get_children():
+		if c is StaticBody3D or c is RigidBody3D or c is Area3D \
+				or c is AnimatableBody3D or c is CharacterBody3D:
+			body_count += 1
+		if c is CollisionShape3D:
+			shape_count += 1
+	assert_eq(body_count, 0, "clean -c: no body anywhere")
+	assert_eq(shape_count, 1, "clean -c: exactly one orphan CollisionShape3D")
+	assert_true(mi in ctx.deferred_deletes, "original mesh node queued for deletion")
+	parent.free()
+
+func test_col_only_orphan_under_existing_body():
+	# Nested-gltf composition: outer scene supplies a StaticBody3D; the
+	# orphan-collider .gltf's -c nodes sit under a Node3D child of that body.
+	# After handler runs, the CollisionShape3D lives under the Node3D parent
+	# and is reachable from the outer body — functional physics contract.
+	var outer_body := StaticBody3D.new()
+	outer_body.name = "OuterBody"
+	var inner_parent := Node3D.new()
+	inner_parent.name = "InnerGroup"
+	outer_body.add_child(inner_parent)
+	var mi := _make_mesh_instance()
+	inner_parent.add_child(mi)
+	CollisionHandler.apply(mi, {
+		"collision": "box-c",
+		"size_x": "1", "size_y": "1", "size_z": "1"
+	}, ctx)
+	var shape: CollisionShape3D = null
+	for c in inner_parent.get_children():
+		if c is CollisionShape3D:
+			shape = c
+	assert_not_null(shape, "orphan shape attached to inner parent")
+	assert_eq(shape.get_parent(), inner_parent, "shape's direct parent is the inner group")
+	var ancestor: Node = shape.get_parent()
+	var found_body := false
+	while ancestor != null:
+		if ancestor is StaticBody3D:
+			found_body = true
+			break
+		ancestor = ancestor.get_parent()
+	assert_true(found_body, "outer StaticBody3D is an ancestor of the orphan shape")
+	outer_body.free()
+
 func test_col_only_with_script_queues_warning():
 	# When '-c' (col_only) is combined with 'script', the warning must fire
 	# because no body is created to attach the script to.

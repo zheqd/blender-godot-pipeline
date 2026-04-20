@@ -66,7 +66,6 @@ This addon achieves 1:1 behavioral parity with the v2.5.5 runtime, but the imple
 
 **Behavioral corrections**
 - `is_inside_tree()` guard added for world-transform reads — the import hook runs outside the SceneTree.
-- `col_only` (`-c`) with conflicting body-type extras now discards the extras instead of constructing an orphaned body.
 - `shader` override duplicates the material before modifying it — the original leaks changes to shared materials.
 - Multimesh save paths must use `.tres`/`.res` — Godot's `ResourceSaver` rejects `.mesh`.
 - `ImporterMeshInstance3D` nodes are pre-materialized to `MeshInstance3D` early so script and material changes survive the engine's own conversion step.
