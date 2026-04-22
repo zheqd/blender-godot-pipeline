@@ -1,7 +1,0 @@
-{
-  "dirs": ["res://test/unit/", "res://test/integration/"],
-  "should_print_to_console": true,
-  "should_exit": true,
-  "log_level": 1,
-  "include_subdirs": true
-}

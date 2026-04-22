@@ -1,2 +1,0 @@
-speed=12.5
-damage=7
