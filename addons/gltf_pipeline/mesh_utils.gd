@@ -86,9 +86,14 @@ static func _materialize_one(old: ImporterMeshInstance3D) -> void:
 	for k: StringName in old.get_meta_list():
 		mi.set_meta(k, old.get_meta(k))
 
-	# Move old's children to the new node (in order).
+	# Move old's children to the new node (in order). Null owner first: the
+	# children inherit old's import-time owner (the scene root), which isn't
+	# an ancestor under the in-flight new MeshInstance3D yet — add_child would
+	# otherwise emit "owner inconsistent" warnings. _import_post's
+	# _assign_owners pass re-owns everything to the scene root at the end.
 	var children: Array[Node] = old.get_children()
 	for c: Node in children:
+		c.owner = null
 		old.remove_child(c)
 		mi.add_child(c)
 
