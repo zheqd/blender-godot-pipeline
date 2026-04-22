@@ -150,6 +150,11 @@ func _flush(ctx: PipelineContext) -> void:
 		var old_parent: Node = child.get_parent()
 		if old_parent:
 			old_parent.remove_child(child)
+		# Clear owner before reparent: the child's import-time owner is no
+		# longer an ancestor under the new parent, which would make Godot emit
+		# a "owner inconsistent" warning from scene/main/node.cpp. The
+		# subsequent _assign_owners pass re-owns everything to the scene root.
+		child.owner = null
 		new_parent.add_child(child)
 	for n: Node in ctx.deferred_deletes:
 		if is_instance_valid(n):
