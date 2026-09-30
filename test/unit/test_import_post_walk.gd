@@ -21,6 +21,8 @@ func test_import_post_visits_every_node_post_order():
 
 	ext._visit_for_test = func(n: Node): visited.append(String(n.name))
 	var state := GLTFState.new()
+	# Pipeline data is required, or _import_post skips the file entirely.
+	state.json = {"scenes": [{"extras": {"GodotPipelineProps": {}}}]}
 	var result: int = ext._import_post(state, root)
 	assert_eq(result, OK)
 	assert_eq(visited, ["Grandchild", "Child", "Root"],

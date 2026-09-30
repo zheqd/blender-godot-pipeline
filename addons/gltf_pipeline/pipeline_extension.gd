@@ -23,12 +23,24 @@ const _PackedSceneHandler: GDScript = preload("res://addons/gltf_pipeline/handle
 const _SceneGlobalsHandler: GDScript = preload("res://addons/gltf_pipeline/handlers/scene_globals_handler.gd")
 const _MeshUtils: GDScript = preload("res://addons/gltf_pipeline/mesh_utils.gd")
 
+# Extras keys the handlers act on; any other extras (e.g. Blender's targetNames) do not trigger the pipeline.
+const _TRIGGER_KEYS: Array[String] = [
+	"state", "name_override", "script", "prop_string", "prop_file",
+	"material_0", "material_1", "material_2", "material_3", "shader",
+	"collision", "physics_mat", "nav_mesh", "multimesh", "packed_scene",
+]
+
 # Test hooks. Set from unit tests to intercept or observe.
 var _visit_for_test: Callable = Callable()
 var _last_ctx: PipelineContext = null
 
 func _import_post(state: GLTFState, root: Node) -> int:
 	if root == null:
+		return OK
+	# Files without pipeline data (characters, props) must import exactly as
+	# without this addon: materialize_all drops skins and skips the engine's
+	# LOD / shadow-mesh / UV2 passes.
+	if not _has_pipeline_data(state):
 		return OK
 	# Pre-convert ImporterMeshInstance3D → MeshInstance3D so subsequent
 	# handler changes (set_script, set_surface_override_material, etc.)
@@ -90,6 +102,30 @@ func _extract_scene_extras(state: GLTFState) -> Dictionary:
 				if props is Dictionary:
 					return props as Dictionary
 	return {}
+
+## True when the glTF carries Godot-Pipeline scene props or any node/mesh
+## extras containing at least one of [constant _TRIGGER_KEYS].
+static func _has_pipeline_data(state: GLTFState) -> bool:
+	if state == null or state.json == null:
+		return false
+	var json: Dictionary = state.json
+	var scenes: Variant = json.get("scenes", [])
+	if scenes is Array and (scenes as Array).size() > 0 and (scenes as Array)[0] is Dictionary:
+		var scene_extras: Variant = ((scenes as Array)[0] as Dictionary).get("extras", {})
+		if scene_extras is Dictionary and (scene_extras as Dictionary).has("GodotPipelineProps"):
+			return true
+	for key: String in ["nodes", "meshes"]:
+		var items: Variant = json.get(key, [])
+		if not items is Array:
+			continue
+		for item: Variant in items as Array:
+			if item is Dictionary:
+				var extras: Variant = (item as Dictionary).get("extras", {})
+				if extras is Dictionary:
+					for trigger: String in _TRIGGER_KEYS:
+						if (extras as Dictionary).has(trigger):
+							return true
+	return false
 
 func _walk_post_order(node: Node, ctx: PipelineContext) -> void:
 	var children: Array[Node] = node.get_children()

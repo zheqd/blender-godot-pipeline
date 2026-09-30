@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- glTF files without pipeline data are no longer touched. `_import_post` returns early unless the file carries `GodotPipelineProps` or a pipeline key in node/mesh `extras`. Previously every imported glTF had its meshes converted up front, which stripped `skin`/`skeleton_path` from skinned characters and skipped LOD, shadow-mesh and UV2 generation. Unrelated extras such as Blender's `targetNames` (shape keys) do not count.
+
 ## [1.0.0] - 2026-04-18
 
 Initial release. Full feature parity with the v2.5.5 runtime of [bikemurt/blender-godot-pipeline](https://github.com/bikemurt/blender-godot-pipeline), implemented as a `GLTFDocumentExtension`.

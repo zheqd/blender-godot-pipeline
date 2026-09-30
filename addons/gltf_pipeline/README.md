@@ -49,6 +49,7 @@ Key divergences from the v2.5.5 reference runtime:
 - `state=skip` uses `queue_free()` via `remove_child()` instead of `node.free()` (safe under the `_import_post` walk).
 - `multimesh=<path>` paths must use `.tres`/`.res` — Godot's `ResourceSaver` rejects the `.mesh` extension v2.5.5 allowed.
 - No `_Imported` marker node — `_import_post` runs natively on every re-import.
+- Files are skipped entirely unless they carry `GodotPipelineProps` or a pipeline key (`state`, `name_override`, `script`, `prop_string`, `prop_file`, `material_0`-`material_3`, `shader`, `collision`, `physics_mat`, `nav_mesh`, `multimesh`, `packed_scene`) in node/mesh `extras`; other extras such as Blender's `targetNames` on shape-key meshes do not trigger it. Without this, `materialize_all` would convert every mesh in every imported glTF, dropping `skin`/`skeleton_path` and skipping LOD, shadow-mesh and UV2 generation.
 
 ## License
 
